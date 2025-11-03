@@ -1,0 +1,45 @@
+<section class="card encode-card">
+  <h2 class="card-title">Codificar Token (PyJWT)</h2>
+
+  <div class="form-group">
+    <label class="label small">Payload (JSON)</label>
+    <textarea rows="6" class="input-mono" [(ngModel)]="payloadText"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label class="label small">Clave secreta</label>
+    <input type="text" class="input-mono" [(ngModel)]="secretText" placeholder="Clave secreta para HS*" />
+  </div>
+
+  <div class="form-group">
+    <label class="label small">Algoritmo</label>
+    <select class="input" [(ngModel)]="algorithm">
+      <option value="HS256">HS256</option>
+      <option value="HS384">HS384</option>
+      <option value="HS512">HS512</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label class="label small">Expira en (segundos, opcional)</label>
+    <input type="number" class="input" [(ngModel)]="expiration" placeholder="3600" />
+  </div>
+
+  <div class="actions-row">
+    <button class="btn primary" (click)="generate()" [disabled]="loading()">
+      <span *ngIf="!loading()">Generar Token</span>
+      <span *ngIf="loading()">⏳ Procesando...</span>
+    </button>
+    <button class="btn ghost" (click)="clearForm()">Limpiar</button>
+  </div>
+
+  <div *ngIf="error()" class="error-box">{{ error() }}</div>
+
+  <div *ngIf="result()" class="result-container">
+    <h4>Token generado</h4>
+    <pre class="result-area">{{ result() }}</pre>
+    <button class="btn ghost copy-btn" (click)="copyToClipboard(result() || '')">
+      📋 Copiar token
+    </button>
+  </div>
+</section>

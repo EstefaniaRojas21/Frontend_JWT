@@ -1,0 +1,140 @@
+:host {
+  display: block;
+}
+
+.encode-card {
+  background: linear-gradient(145deg, #fef9f9, #f3f0ff);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #e0d7ff;
+  box-shadow: 0 6px 18px rgba(90, 70, 255, 0.1);
+  max-width: 600px;
+  margin: 0 auto;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(90, 70, 255, 0.2);
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #3b0764;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #6d28d9;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .input-mono, .input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #c4b5fd;
+      font-family: monospace;
+      background: #faf5ff;
+      color: #1e1b4b;
+      box-sizing: border-box;
+      transition: all 0.25s ease;
+
+      &:focus {
+        border-color: #8b5cf6;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+        background: #ede9fe;
+      }
+    }
+  }
+
+  .actions-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+
+    .btn {
+      flex: 1;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+      transition: all 0.25s ease;
+
+      &:hover {
+        background: linear-gradient(90deg, #a855f7, #6366f1);
+        transform: scale(1.03);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+  }
+
+  .error-box {
+    margin-top: 10px;
+    padding: 10px;
+    background: #fff0f0;
+    border: 1px solid #f87171;
+    color: #b91c1c;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .result-container {
+    margin-top: 20px;
+    background: linear-gradient(135deg, #f3f0ff, #e0f2fe);
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+
+    h4 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      color: #3730a3;
+    }
+
+    .result-area {
+      word-break: break-all;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      max-height: 220px;
+      overflow: auto;
+      color: #1e293b;
+      border: 1px solid rgba(203, 213, 225, 0.6);
+    }
+
+    .copy-btn {
+      margin-top: 10px;
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 8px;
+      background: linear-gradient(90deg, #34d399, #10b981);
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.25s ease;
+      cursor: pointer;
+
+      &:hover {
+        background: linear-gradient(90deg, #10b981, #34d399);
+      }
+    }
+  }
+}

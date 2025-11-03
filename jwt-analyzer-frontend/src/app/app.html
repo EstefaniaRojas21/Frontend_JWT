@@ -1,0 +1,35 @@
+<!-- Header compacto con logo -->
+  <header class="site-header">
+    <div class="container header-inner">
+
+      <!-- Brand: logo + títulos -->
+      <div class="brand">
+        <img src="assets/logo-small.svg" alt="Logo" class="brand-logo" />
+        <div class="brand-text">
+          <h1 class="brand-title">JWT Analyzer</h1>
+          <p class="brand-sub">Analizador y validador de JSON Web Tokens</p>
+        </div>
+      </div>
+
+      <!-- Acciones del header -->
+      <nav class="header-actions">
+        <button class="btn ghost" (click)="onClearAll()">Limpiar Todo</button>
+        <a href="#" class="link-muted" target="_blank" rel="noopener">Docs</a>
+      </nav>
+
+    </div>
+  </header>
+
+
+<!-- Main container con grid de dos columnas -->
+<main class="container main-grid">
+
+  <!-- Columna izquierda: Analyzer -->
+  <jwt-analyzer (tokenAnalyzed)="onTokenAnalyzed($event)"></jwt-analyzer>
+
+  <!-- Columna derecha: Encoder / Info -->
+  <jwt-encoder (tokenGenerated)="onTokenGenerated($event)"></jwt-encoder>
+
+</main>
+
+<router-outlet></router-outlet>

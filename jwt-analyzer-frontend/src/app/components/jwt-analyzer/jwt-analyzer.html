@@ -1,0 +1,53 @@
+<section class="card analyzer-card">
+  <h2 class="card-title">Analizar Token</h2>
+
+  <label class="label">Token JWT</label>
+  <textarea
+    rows="4"
+    placeholder="Pega tu JWT aquí..."
+    class="input-mono"
+    [(ngModel)]="jwtText"
+  ></textarea>
+
+  <label class="label small">Clave para verificar (opcional)</label>
+  <input type="text" class="input-mono" placeholder="Secret o public key PEM (opcional)" />
+
+  <div class="actions-row">
+    <button class="btn primary" (click)="analizarToken()" [disabled]="loading()">
+      <span *ngIf="!loading()">Analizar Token Completo</span>
+      <span *ngIf="loading()">⏳ Procesando...</span>
+    </button>
+
+    <button class="btn success" (click)="validarFirma()" [disabled]="loading()">
+      Validar Token
+    </button>
+
+    <div class="spacer"></div>
+
+    <div class="phase-dropdown">
+      <button class="btn secondary" (click)="showDetails.set(!showDetails())">
+        Analizar por Fase ▾
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error()" class="error-box">{{ error() }}</div>
+
+  <!-- Panel azul resumido -->
+  <div *ngIf="analyzedSummary" class="summary-panel">
+    <app-output-panel 
+        [data]="analyzedData()?.payload_decodificado" 
+        title="Resumen del Payload">
+    </app-output-panel>
+
+  </div>
+
+
+  <!-- Salida detallada completa -->
+  <section class="container output-wide" *ngIf="analyzedData()" style="margin-top:18px;">
+    <div class="card detailed-card">
+      <h3 class="card-title">Salida detallada</h3>
+      <pre class="result-area">{{ analyzedData() | json }}</pre>
+    </div>
+  </section>
+</section>

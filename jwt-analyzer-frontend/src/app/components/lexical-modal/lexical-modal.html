@@ -1,0 +1,127 @@
+<div class="modal-backdrop" (click)="close()"></div>
+
+<div class="modal-window" (click)="$event.stopPropagation()">
+  <h2 class="modal-title">🔎 Análisis de JWT</h2>
+
+  <!-- ✅ NAV de fases -->
+  <div class="phase-switch">
+    <button 
+      class="phase-btn" 
+      [class.active]="currentPhase === 'lexico'" 
+      (click)="switchPhase('lexico')">
+      🟦 Léxico
+    </button>
+    <button 
+      class="phase-btn" 
+      [class.active]="currentPhase === 'sintactico'" 
+      (click)="switchPhase('sintactico')">
+      🟩 Sintáctico
+    </button>
+    <button 
+      class="phase-btn" 
+      [class.active]="currentPhase === 'semantico'" 
+      (click)="switchPhase('semantico')">
+      🟨 Semántico
+    </button>
+  </div>
+
+  <!-- ✅ Contenido scrolleable -->
+  <div class="modal-content">
+    <div *ngIf="result" class="pretty-box">
+      
+      <!-- ALFABETO -->
+      <div *ngIf="result.alfabeto" class="section">
+        <h3>📌 Alfabeto Reconocido</h3>
+        <div class="chip-container">
+          <span class="chip">{{ result.alfabeto }}</span>
+        </div>
+      </div>
+
+      <!-- DELIMITADORES -->
+      <div *ngIf="result.delimitadores" class="section">
+        <h3>⚡ Delimitadores</h3>
+        <div class="chip-container">
+          <span class="chip" *ngFor="let d of result.delimitadores">{{ d }}</span>
+        </div>
+      </div>
+
+      <!-- TOKENS -->
+      <div *ngIf="result.tokens?.length" class="section">
+        <h3>🔤 Tokens Identificados ({{ result.tokens.length }})</h3>
+        <div class="token-list">
+          <div class="token-card" *ngFor="let t of result.tokens; let i = index">
+            <div class="token-header">
+              <span class="token-number">#{{ i + 1 }}</span>
+              <span class="token-type">{{ t.tipo }}</span>
+            </div>
+            <div class="token-value">{{ t.valor }}</div>
+            <div class="token-meta">
+              Línea {{ t.linea }} | Columna {{ t.columna }} | Longitud {{ t.longitud }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HEADER -->
+      <div *ngIf="result.header" class="section">
+        <h3>🛡 Header Decodificado</h3>
+        <pre class="json-display">{{ result.header | json }}</pre>
+      </div>
+
+      <!-- PAYLOAD -->
+      <div *ngIf="result.payload" class="section">
+        <h3>📦 Payload Decodificado</h3>
+        <pre class="json-display">{{ result.payload | json }}</pre>
+      </div>
+
+      <!-- ÁRBOL SINTÁCTICO -->
+      <div *ngIf="result.arbol_sintactico" class="section">
+        <h3>🌲 Árbol Sintáctico</h3>
+        <pre class="json-display">{{ result.arbol_sintactico | json }}</pre>
+      </div>
+
+      <!-- GRAMÁTICA -->
+      <div *ngIf="result.gramatica" class="section">
+        <h3>📜 Gramática Aplicada</h3>
+        <pre class="json-display">{{ result.gramatica | json }}</pre>
+      </div>
+
+      <!-- VALIDACIONES SEMÁNTICAS -->
+      <div *ngIf="result.validaciones" class="section">
+        <h3>✅ Validaciones Semánticas</h3>
+        <pre class="json-display">{{ result.validaciones | json }}</pre>
+      </div>
+
+      <!-- TABLA DE SÍMBOLOS -->
+      <div *ngIf="result.tabla_simbolos" class="section">
+        <h3>📋 Tabla de Símbolos</h3>
+        <pre class="json-display">{{ result.tabla_simbolos | json }}</pre>
+      </div>
+
+      <!-- ERRORES -->
+      <div *ngIf="result.errores?.length" class="section section-error">
+        <h3>❌ Errores Detectados ({{ result.errores.length }})</h3>
+        <div class="error-card" *ngFor="let e of result.errores">
+          {{ e }}
+        </div>
+      </div>
+
+      <!-- ADVERTENCIAS -->
+      <div *ngIf="result.advertencias?.length" class="section section-warn">
+        <h3>⚠️ Advertencias ({{ result.advertencias.length }})</h3>
+        <div class="warn-card" *ngFor="let w of result.advertencias">
+          {{ w }}
+        </div>
+      </div>
+
+      <!-- SI NO HAY DATOS -->
+      <div *ngIf="!hasAnyData()" class="section section-empty">
+        <p>⏳ Cargando datos de {{ currentPhase }}...</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ✅ Botón cerrar -->
+  <button class="btn-close" (click)="close()">Cerrar</button>
+</div>

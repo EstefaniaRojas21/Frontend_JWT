@@ -3,6 +3,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { map, catchError } from 'rxjs/operators';
+
 
 @Injectable({ providedIn: 'root' })
 export class JwtApi {
@@ -24,4 +26,32 @@ export class JwtApi {
     if (expires_in) body.expires_in = expires_in;
     return this.http.post<any>(`${this.base}/encode`, body);
   }
+
+  analyzePhase(token: string, fase: 'lexico' | 'sintactico' | 'semantico') {
+  return this.http.post(`${this.base}/analyze`, { jwt: token }).pipe(
+    map((res: any) => {
+      switch (fase) {
+        case 'lexico':
+          return {
+            alfabeto: res.alfabeto,
+            tokens: res.tokens,
+            errores: res.errores,
+            advertencias: res.advertencias,
+            header: res.header_decodificado,
+            payload: res.payload_decodificado
+          };
+
+        case 'sintactico':
+          return res.sintactico;
+
+        case 'semantico':
+          return res.semantico;
+
+        default:
+          return res;
+      }
+    })
+  );
+}
+
 }

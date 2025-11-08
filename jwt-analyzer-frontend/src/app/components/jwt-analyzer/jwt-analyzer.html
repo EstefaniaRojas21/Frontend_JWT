@@ -1,6 +1,9 @@
+<div class="left-panel">
 <section class="card analyzer-card">
-  <h2 class="card-title">Analizar Token</h2>
 
+  <h2 class="section-title">🔍 Analizador de JWT</h2>
+
+  <!-- Campo principal -->
   <label class="label">Token JWT</label>
   <textarea
     rows="4"
@@ -9,45 +12,90 @@
     [(ngModel)]="jwtText"
   ></textarea>
 
+  <!-- Clave opcional -->
   <label class="label small">Clave para verificar (opcional)</label>
-  <input type="text" class="input-mono" placeholder="Secret o public key PEM (opcional)" />
+  <input
+    type="text"
+    class="input-mono"
+    placeholder="Secret o public key PEM"
+  />
 
-  <div class="actions-row">
-    <button class="btn primary" (click)="analizarToken()" [disabled]="loading()">
+  <!-- ✅ Botones principales -->
+  <div class="main-actions">
+    <button
+      class="btn analyze-blue"
+      (click)="analizarToken()"
+      [disabled]="loading()"
+    >
       <span *ngIf="!loading()">Analizar Token Completo</span>
       <span *ngIf="loading()">⏳ Procesando...</span>
     </button>
 
-    <button class="btn success" (click)="validarFirma()" [disabled]="loading()">
+    <button
+      class="btn validate-green"
+      (click)="validarFirma()"
+      [disabled]="loading()"
+    >
       Validar Token
     </button>
+  </div>
 
-    <div class="spacer"></div>
+  <!-- ✅ Menú de análisis por fases -->
+  <div class="phase-box">
+    <button
+      class="btn phase-menu-btn"
+      (click)="showDetails.set(!showDetails())"
+    >
+      Analizar por Fase ▾
+    </button>
 
-    <div class="phase-dropdown">
-      <button class="btn secondary" (click)="showDetails.set(!showDetails())">
-        Analizar por Fase ▾
+    <div class="phase-options" *ngIf="showDetails()">
+      <button (click)="analizarFase('lexico')" class="phase-option">
+        🟦 Análisis Léxico
+      </button>
+
+      <button (click)="analizarFase('sintactico')" class="phase-option">
+        🟩 Análisis Sintáctico
+      </button>
+
+      <button (click)="analizarFase('semantico')" class="phase-option">
+        🟨 Análisis Semántico
       </button>
     </div>
   </div>
 
+  <!-- ✅ Mensajes -->
   <div *ngIf="error()" class="error-box">{{ error() }}</div>
 
-  <!-- Panel azul resumido -->
+  <!-- ✅ Panel Resumen -->
   <div *ngIf="analyzedSummary" class="summary-panel">
-    <app-output-panel 
-        [data]="analyzedData()?.payload_decodificado" 
-        title="Resumen del Payload">
-    </app-output-panel>
-
+    <app-output-panel
+      [data]="analyzedData()?.payload_decodificado"
+      title="Resumen del Payload"
+    ></app-output-panel>
   </div>
 
-
-  <!-- Salida detallada completa -->
-  <section class="container output-wide" *ngIf="analyzedData()" style="margin-top:18px;">
+  <!-- ✅ Salida Completa -->
+  <section class="container output-wide" *ngIf="analyzedData()">
     <div class="card detailed-card">
       <h3 class="card-title">Salida detallada</h3>
       <pre class="result-area">{{ analyzedData() | json }}</pre>
     </div>
   </section>
+
 </section>
+
+
+<app-lexical-modal
+  *ngIf="showModal()"
+  [currentPhase]="activePhase()"
+  [result]="phaseResults()[activePhase()]"
+  (closed)="showModal.set(false)"
+  (phaseChanged)="onPhaseChanged($event)"
+></app-lexical-modal>
+
+
+
+
+
+</div>

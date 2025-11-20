@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Output, Input, signal, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { JwtApi } from '../../services/jwt-api';
@@ -10,7 +10,12 @@ import { JwtApi } from '../../services/jwt-api';
   templateUrl: './jwt-encoder.html',
   styleUrls: ['./jwt-encoder.scss']
 })
-export class JwtEncoder {
+
+
+export class JwtEncoder implements OnChanges {
+
+@Input() externalDecodedPayload: any = null;
+
   // Campos del formulario
   payloadText = '{"sub":"123","name":"Alice"}';
   secretText = '';
@@ -26,7 +31,6 @@ export class JwtEncoder {
 
   constructor(private api: JwtApi) {}
 
-  // Generar token usando API real
   generate() {
     this.error.set(null);
     this.result.set(null);
@@ -90,9 +94,9 @@ export class JwtEncoder {
       ta.style.left = '-9999px';
       document.body.appendChild(ta);
       ta.select();
-      // @ts-ignore: execCommand usado solo como fallback
       document.execCommand('copy');
       document.body.removeChild(ta);
+      
       alert('Token copiado ✅');
     } catch {
       alert('No se pudo copiar automáticamente. Selecciona y copia manualmente.');
@@ -109,4 +113,21 @@ export class JwtEncoder {
     this.result.set(null);
     this.loading.set(false);
   }
+
+  setDecodedPayload(data: any) {
+  if (!data?.payload_decodificado) return;
+  this.payloadText = JSON.stringify(data.payload_decodificado, null, 2);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+  if (changes['externalDecodedPayload'] && this.externalDecodedPayload) {
+    this.payloadText = JSON.stringify(this.externalDecodedPayload, null, 2);
+  }
 }
+
+
+
+
+}
+
+

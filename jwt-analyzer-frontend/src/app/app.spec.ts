@@ -19,7 +19,7 @@ describe('App', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
 
-    // Buscamos la clase .brand-title (es más específico y menos frágil que buscar el primer <h1>)
+    
     const title = compiled.querySelector('.brand-title')?.textContent?.trim().toLowerCase() ?? '';
     expect(title).toContain('jwt analyzer'.toLowerCase());
   });

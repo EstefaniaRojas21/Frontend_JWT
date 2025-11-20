@@ -27,6 +27,14 @@ export class JwtApi {
     return this.http.post<any>(`${this.base}/encode`, body);
   }
 
+  verify_signature(token: string, secret: string) {
+    return this.http.post(this.base + '/verify-signature', {
+      jwt: token,
+      secret: secret
+    });
+  }
+
+
   analyzePhase(token: string, fase: 'lexico' | 'sintactico' | 'semantico') {
   return this.http.post(`${this.base}/analyze`, { jwt: token }).pipe(
     map((res: any) => {

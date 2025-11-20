@@ -29,50 +29,150 @@
   <div class="modal-content">
     <div *ngIf="result" class="pretty-box">
       
-      <!-- ALFABETO -->
-      <div *ngIf="result.alfabeto" class="section">
-        <h3>📌 Alfabeto Reconocido</h3>
-        <div class="chip-container">
-          <span class="chip">{{ result.alfabeto }}</span>
+      <!-- ========== FASE LÉXICO ========== -->
+      <div *ngIf="currentPhase === 'lexico'">
+        
+        <!-- REPORTE DE ANÁLISIS -->
+        <div *ngIf="result.reporte_analisis_lexico" class="section section-report">
+          <h3>📋 Reporte de Análisis Léxico</h3>
+          <div class="report-content">
+            <pre class="report-text">{{ result.reporte_analisis_lexico }}</pre>
+          </div>
         </div>
-      </div>
 
-      <!-- DELIMITADORES -->
-      <div *ngIf="result.delimitadores" class="section">
-        <h3>⚡ Delimitadores</h3>
-        <div class="chip-container">
-          <span class="chip" *ngFor="let d of result.delimitadores">{{ d }}</span>
+
+        <!-- ALFABETO -->
+        <div *ngIf="result.alfabeto" class="section">
+          <h3>📌 Alfabeto Reconocido</h3>
+
+          <!-- Notación formal -->
+          <div class="formal-notation">
+            <p><strong>σ₁ (Base64URL):</strong> {{ '{' }} A–Z, a–z, 0–9, '-', '_' {{ '}' }}</p>
+            <p><strong>σ₂ (Delimitador JWT):</strong> {{ '{' }} '.' {{ '}' }}</p>
+            <p><strong>σ (Alfabeto Total):</strong> {{ '{' }} A–Z ∪ a–z ∪ 0–9 ∪ '-' ∪ '_' ∪ '.' {{ '}' }}</p>
+
+          </div>
+
+          <!-- Tabla de desglose -->
+          <table class="alphabet-table">
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th>Símbolos</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Letras mayúsculas</td>
+                <td>A–Z</td>
+                <td>26</td>
+              </tr>
+              <tr>
+                <td>Letras minúsculas</td>
+                <td>a–z</td>
+                <td>26</td>
+              </tr>
+              <tr>
+                <td>Dígitos</td>
+                <td>0–9</td>
+                <td>10</td>
+              </tr>
+              <tr>
+                <td>Símbolos</td>
+                <td>' - ', ' _ '</td>
+                <td>2</td>
+              </tr>
+              <tr class="total-row">
+                <td><strong>Total Base64URL</strong></td>
+                <td></td>
+                <td><strong>64</strong></td>
+              </tr>
+              <tr>
+                <td>Delimitador JWT</td>
+                <td>'.'</td>
+                <td>1</td>
+              </tr>
+              <tr class="total-row">
+                <td><strong>Total Alfabeto</strong></td>
+                <td></td>
+                <td><strong>65</strong></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </div>
 
-      <!-- TOKENS -->
-      <div *ngIf="result.tokens?.length" class="section">
-        <h3>🔤 Tokens Identificados ({{ result.tokens.length }})</h3>
-        <div class="token-list">
-          <div class="token-card" *ngFor="let t of result.tokens; let i = index">
-            <div class="token-header">
-              <span class="token-number">#{{ i + 1 }}</span>
-              <span class="token-type">{{ t.tipo }}</span>
-            </div>
-            <div class="token-value">{{ t.valor }}</div>
-            <div class="token-meta">
-              Línea {{ t.linea }} | Columna {{ t.columna }} | Longitud {{ t.longitud }}
+
+        <!-- TOKENS -->
+        <div *ngIf="result.tokens?.length" class="section">
+          <h3>🔤 Tokens Identificados ({{ result.tokens.length }})</h3>
+          <div class="token-list">
+            <div class="token-card" *ngFor="let t of result.tokens; let i = index">
+              <div class="token-header">
+                <span class="token-number">#{{ i + 1 }}</span>
+                <span class="token-type" [ngClass]="getTokenClass(t.tipo)">{{ t.tipo }}</span>
+              </div>
+              <div class="token-value">{{ truncateValue(t.valor, 80) }}</div>
+              <div class="token-meta">
+                Línea {{ t.linea }} | Columna {{ t.columna }} | Longitud {{ t.longitud || t.valor?.length || 0 }}
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- HEADER DECODIFICADO -->
+        <div *ngIf="result.header_decodificado" class="section">
+          <h3>🛡 Header Decodificado</h3>
+          <pre class="json-display">{{ result.header_decodificado | json }}</pre>
+        </div>
+
+        <!-- PAYLOAD DECODIFICADO -->
+        <div *ngIf="result.payload_decodificado" class="section">
+          <h3>📦 Payload Decodificado</h3>
+          <pre class="json-display">{{ result.payload_decodificado | json }}</pre>
+        </div>
+
+        
+
+        <!-- ERRORES LÉXICOS -->
+        <div *ngIf="result.errores?.length" class="section section-error">
+          <h3>❌ Errores Léxicos ({{ result.errores.length }})</h3>
+          <div class="error-card" *ngFor="let e of result.errores">
+            {{ e }}
+          </div>
+        </div>
+
+        <!-- ADVERTENCIAS LÉXICAS -->
+        <div *ngIf="result.advertencias?.length" class="section section-warn">
+          <h3>⚠️ Advertencias ({{ result.advertencias.length }})</h3>
+          <div class="warn-card" *ngFor="let w of result.advertencias">
+            {{ w }}
+          </div>
+        </div>
+
       </div>
 
-      <!-- HEADER -->
-      <div *ngIf="result.header" class="section">
-        <h3>🛡 Header Decodificado</h3>
-        <pre class="json-display">{{ result.header | json }}</pre>
+      <div *ngIf="currentPhase === 'sintactico'">
+
+      <!-- VALIDACIÓN SINTÁCTICA -->
+      <div *ngIf="result.valido !== undefined" class="section">
+        <h3>✅ Validación Sintáctica</h3>
+        <div class="validation-result" [class.valid]="result.valido" [class.invalid]="!result.valido">
+          <span *ngIf="result.valido">✅ Sintaxis Válida</span>
+          <span *ngIf="!result.valido">❌ Sintaxis Inválida</span>
+        </div>
       </div>
 
-      <!-- PAYLOAD -->
-      <div *ngIf="result.payload" class="section">
-        <h3>📦 Payload Decodificado</h3>
-        <pre class="json-display">{{ result.payload | json }}</pre>
+      <!-- DERIVACIONES -->
+      <!-- DERIVACIONES -->
+      <div *ngIf="result.derivaciones?.length" class="section">
+        <h3>📝 Derivaciones Paso a Paso</h3>
+        <div *ngFor="let paso of result.derivaciones" class="derivation-step">
+          {{ paso }}
+        </div>
       </div>
+
+
 
       <!-- ÁRBOL SINTÁCTICO -->
       <div *ngIf="result.arbol_sintactico" class="section">
@@ -86,32 +186,96 @@
         <pre class="json-display">{{ result.gramatica | json }}</pre>
       </div>
 
-      <!-- VALIDACIONES SEMÁNTICAS -->
-      <div *ngIf="result.validaciones" class="section">
-        <h3>✅ Validaciones Semánticas</h3>
-        <pre class="json-display">{{ result.validaciones | json }}</pre>
-      </div>
-
-      <!-- TABLA DE SÍMBOLOS -->
-      <div *ngIf="result.tabla_simbolos" class="section">
-        <h3>📋 Tabla de Símbolos</h3>
-        <pre class="json-display">{{ result.tabla_simbolos | json }}</pre>
-      </div>
-
-      <!-- ERRORES -->
+      <!-- ERRORES SINTÁCTICOS -->
       <div *ngIf="result.errores?.length" class="section section-error">
-        <h3>❌ Errores Detectados ({{ result.errores.length }})</h3>
+        <h3>❌ Errores Sintácticos ({{ result.errores.length }})</h3>
         <div class="error-card" *ngFor="let e of result.errores">
           {{ e }}
         </div>
       </div>
 
-      <!-- ADVERTENCIAS -->
-      <div *ngIf="result.advertencias?.length" class="section section-warn">
-        <h3>⚠️ Advertencias ({{ result.advertencias.length }})</h3>
-        <div class="warn-card" *ngFor="let w of result.advertencias">
-          {{ w }}
+    </div>
+
+
+      <!-- ========== FASE SEMÁNTICO ========== -->
+      <div *ngIf="currentPhase === 'semantico'">
+        
+        <!-- TABLA DE SÍMBOLOS -->
+        <div *ngIf="result.tabla_simbolos" class="section">
+        <h3>📋 Tabla de Símbolos</h3>
+
+        <table class="symbol-table">
+          <thead>
+            <tr>
+              <th>Componente</th>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of result.tabla_simbolos">
+              <td class="badge" [ngClass]="item.componente">{{ item.componente }}</td>
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.tipo }}</td>
+              <td>{{ item.valor }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+
+        <!-- VALIDACIÓN TEMPORAL -->
+        <div *ngIf="result.validacion_tiempo" class="section">
+        <h3>⏰ Validación Temporal</h3>
+
+        <div class="val-box">
+          <div class="val-item">
+            <span class="val-label">Estado:</span>
+            <span class="val-value estado" [ngClass]="{
+              'ok': result.validacion_tiempo.estado.includes('✅'),
+              'warn': result.validacion_tiempo.estado.includes('⚠️'),
+              'error': result.validacion_tiempo.estado.includes('❌')
+            }">
+              {{ result.validacion_tiempo.estado }}
+            </span>
+          </div>
+
+          <div class="val-item">
+            <span class="val-label">Fecha Actual:</span>
+            <span class="val-value">{{ result.validacion_tiempo.fecha_actual }}</span>
+          </div>
+
+          <div class="val-item">
+            <span class="val-label">Fecha de Emisión (iat):</span>
+            <span class="val-value">{{ result.validacion_tiempo.fecha_emision }}</span>
+          </div>
+
+          <div class="val-item">
+            <span class="val-label">Fecha de Expiración (exp):</span>
+            <span class="val-value">{{ result.validacion_tiempo.fecha_expiracion }}</span>
+          </div>
         </div>
+
+        <div class="detalles-box">
+          <h4>Detalles:</h4>
+
+          <div *ngFor="let d of result.validacion_tiempo.detalles"
+              class="detalle-item">
+            {{ d }}
+          </div>
+        </div>
+      </div>
+
+
+        <!-- ERRORES SEMÁNTICOS -->
+        <div *ngIf="result.errores?.length" class="section section-error">
+          <h3>❌ Errores Semánticos ({{ result.errores.length }})</h3>
+          <div class="error-card" *ngFor="let e of result.errores">
+            {{ e }}
+          </div>
+        </div>
+
       </div>
 
       <!-- SI NO HAY DATOS -->

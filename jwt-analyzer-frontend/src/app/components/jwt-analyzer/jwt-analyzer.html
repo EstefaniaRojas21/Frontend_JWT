@@ -12,22 +12,22 @@
     [(ngModel)]="jwtText"
   ></textarea>
 
-  <!-- Clave opcional -->
-  <label class="label small">Clave para verificar (opcional)</label>
+ <label class="label small">Clave para verificar (opcional)</label>
   <input
+    id="secretInput"
     type="text"
     class="input-mono"
     placeholder="Secret o public key PEM"
   />
 
-  <!-- ✅ Botones principales -->
+
   <div class="main-actions">
     <button
       class="btn analyze-blue"
       (click)="analizarToken()"
       [disabled]="loading()"
     >
-      <span *ngIf="!loading()">Analizar Token Completo</span>
+      <span *ngIf="!loading()">Analizar Token</span>
       <span *ngIf="loading()">⏳ Procesando...</span>
     </button>
 
@@ -36,11 +36,11 @@
       (click)="validarFirma()"
       [disabled]="loading()"
     >
-      Validar Token
+      Validar Firma
     </button>
   </div>
 
-  <!-- ✅ Menú de análisis por fases -->
+
   <div class="phase-box">
     <button
       class="btn phase-menu-btn"
@@ -75,14 +75,21 @@
     ></app-output-panel>
   </div>
 
-  <!-- ✅ Salida Completa -->
+  <div *ngIf="analyzedSummary" class="summary-panel">
+    <app-output-panel
+      [data]="analyzedData()?.header_decodificado"
+      title="Resumen del Header"
+    ></app-output-panel>
+  </div>
+
+  <!-- ✅ Salida Completa 
   <section class="container output-wide" *ngIf="analyzedData()">
     <div class="card detailed-card">
       <h3 class="card-title">Salida detallada</h3>
       <pre class="result-area">{{ analyzedData() | json }}</pre>
     </div>
   </section>
-
+-->
 </section>
 
 

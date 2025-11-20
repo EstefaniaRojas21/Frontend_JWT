@@ -29,7 +29,11 @@
   <jwt-analyzer (tokenAnalyzed)="onTokenAnalyzed($event)"></jwt-analyzer>
 
   <!-- Columna derecha: Encoder / Info -->
-  <jwt-encoder (tokenGenerated)="onTokenGenerated($event)"></jwt-encoder>
+  <jwt-encoder 
+  [externalDecodedPayload]="decodedPayload"
+  (tokenGenerated)="onTokenGenerated($event)">
+  </jwt-encoder>
+
 
 </main>
 

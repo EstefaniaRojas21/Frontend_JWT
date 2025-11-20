@@ -15,6 +15,8 @@ import { JwtEncoder } from './components/jwt-encoder/jwt-encoder';
   styleUrls: ['./app.scss']
 })
 export class App {
+
+  decodedPayload: any = null;
   readonly title = signal('JWT Analyzer');
   readonly analyzedData = signal<any | null>(null);
   readonly generatedToken = signal('');
@@ -23,11 +25,15 @@ export class App {
   // Referencias a hijos
   @ViewChild(JwtAnalyzer) analyzer!: JwtAnalyzer;
   @ViewChild(JwtEncoder) encoder!: JwtEncoder;
-
-  // Eventos de hijos
   onTokenAnalyzed(data: any) {
-    console.log('Token Analizado:', data);
-    this.analyzedData.set(data);
+  console.log('Token Analizado:', data);
+
+  this.analyzedData.set(data);
+
+
+    if (data?.payload_decodificado) {
+      this.decodedPayload = data.payload_decodificado;
+    }
   }
 
   onTokenGenerated(token: string) {

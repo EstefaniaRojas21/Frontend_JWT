@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { JwtApi } from '../../services/jwt-api';
 import { OutputPanel } from '../output-panel/output-panel';
-import { LexicalModal } from '../lexical-modal/lexical-modal'; // ruta correcta
+import { LexicalModal } from '../lexical-modal/lexical-modal';
+import Swal from 'sweetalert2';
 
 
 @Component({
@@ -12,17 +13,14 @@ import { LexicalModal } from '../lexical-modal/lexical-modal'; // ruta correcta
   imports: [ CommonModule, FormsModule, OutputPanel, LexicalModal ],
   templateUrl: './jwt-analyzer.html',
   styleUrls: ['./jwt-analyzer.scss']
-  
 })
 export class JwtAnalyzer {
-  jwtText = '';                       // enlazado con [(ngModel)]
+  jwtText = '';
   loading = signal(false);
   error = signal<string | null>(null);
   analyzedData = signal<any | null>(null);
   showDetails = signal(false);
   showModal = signal(false);
-  modalContent = signal<any | null>(null);
-  modalTitle = signal("");
 
   activePhase = signal<'lexico' | 'sintactico' | 'semantico'>('lexico');
 
@@ -32,12 +30,14 @@ export class JwtAnalyzer {
     semantico?: any
   }>({});
 
-
   @Output() tokenAnalyzed = new EventEmitter<any>();
+  
 
   constructor(private api: JwtApi) {}
 
   analizarToken() {
+
+    
     const token = this.jwtText?.trim();
     if (!token) {
       this.error.set('Por favor pega un token JWT antes de analizar.');
@@ -51,7 +51,16 @@ export class JwtAnalyzer {
       next: (res: any) => {
         console.log('Respuesta API completa:', res);
         this.analyzedData.set(res);
-        this.tokenAnalyzed.emit(res);
+        
+
+        this.phaseResults.set({
+          lexico: res,  // El análisis completo incluye todo lo léxico
+          sintactico: res.sintactico,
+          semantico: res.semantico
+        });
+        
+       // this.tokenAnalyzed.emit(res);
+        this.tokenAnalyzed.emit(res); 
         this.loading.set(false);
       },
       error: (err: any) => {
@@ -60,41 +69,78 @@ export class JwtAnalyzer {
         this.loading.set(false);
       }
     });
+
+    
   }
 
   validarFirma() {
-    const token = this.jwtText?.trim();
-    if (!token) {
-      alert('Por favor pega un token JWT antes de validar.');
-      return;
-    }
-
-    this.loading.set(true);
-    this.api.validate(token).subscribe({
-      next: (res: any) => {
-        this.loading.set(false);
-        if (res?.success) {
-          alert('Firma válida ✅');
-        } else {
-          alert('Resultado: ' + (res?.error ?? JSON.stringify(res)));
-        }
-      },
-      error: (err: any) => {
-        this.loading.set(false);
-        alert('Firma inválida ❌');
-      }
+  const token = this.jwtText?.trim();
+  if (!token) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Token faltante',
+      text: 'Por favor pega un token JWT antes de validar.',
+      confirmButtonColor: '#3085d6'
     });
+    return;
   }
+
+  const secretInput: HTMLInputElement | null = document.querySelector("#secretInput");
+  const secret = secretInput?.value.trim() || "";
+
+  if (!secret) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Clave secreta requerida',
+      text: 'Debes ingresar una clave secreta para validar la firma.',
+      confirmButtonColor: '#3085d6'
+    });
+    return;
+  }
+
+  this.loading.set(true);
+
+  this.api.verify_signature(token, secret).subscribe({
+    next: (res: any) => {
+      this.loading.set(false);
+
+      if (res.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Firma válida',
+          text: 'La firma es válida.',
+          confirmButtonColor: '#28a745'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Firma inválida',
+          text: 'La firma del token no coincide con la clave secreta.',
+          confirmButtonColor: '#d33'
+        });
+      }
+    },
+    error: () => {
+      this.loading.set(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error en el servidor',
+        text: 'No se pudo validar la firma.',
+        confirmButtonColor: '#d33'
+      });
+    }
+  });
+}
+
+
 
   clear() {
     this.jwtText = '';
     this.error.set(null);
     this.analyzedData.set(null);
+    this.phaseResults.set({});
   }
 
-  
-
-  // Genera un resumen del JWT para mostrar en el panel azul
   get analyzedSummary() {
     const data = this.analyzedData();
     if (!data) return null;
@@ -107,124 +153,93 @@ export class JwtAnalyzer {
   }
 
   analizarFase(fase: 'lexico' | 'sintactico' | 'semantico') {
-  const token = this.jwtText?.trim();
-  if (!token) {
-    this.error.set("Por favor pega un token JWT antes de analizar una fase.");
-    return;
-  }
+    const token = this.jwtText?.trim();
+    if (!token) {
+      this.error.set("Por favor pega un token JWT antes de analizar una fase.");
+      return;
+    }
 
-  this.loading.set(true);
-
-  this.api.analyzePhase(token, fase).subscribe({
-    next: (res) => {
-      const current = this.phaseResults();
-      this.phaseResults.set({
-        ...current,
-        [fase]: res
-      });
-
+    // Si ya existe analyzedData (análisis completo previo), usar esos datos
+    const currentData = this.analyzedData();
+    if (currentData) {
+      // Usar datos ya existentes
       this.activePhase.set(fase);
-      this.showModal.set(true); // abre el modal con datos correctos
-
-      this.loading.set(false);
-    },
-    error: () => {
-      // Si falla, creamos un resultado mínimo para que el modal tenga algo
-      const current = this.phaseResults();
-      this.phaseResults.set({
-        ...current,
-        [fase]: { tokens: [], header: {}, payload: {}, errores: [], advertencias: [] }
-      });
-      this.activePhase.set(fase);
+      
+      if (fase === 'lexico') {
+        // Para léxico, usamos el análisis completo que ya tiene el reporte
+        this.phaseResults.update(current => ({
+          ...current,
+          lexico: currentData
+        }));
+      } else if (fase === 'sintactico') {
+        this.phaseResults.update(current => ({
+          ...current,
+          sintactico: currentData.sintactico
+        }));
+      } else if (fase === 'semantico') {
+        this.phaseResults.update(current => ({
+          ...current,
+          semantico: currentData.semantico
+        }));
+      }
+      
       this.showModal.set(true);
-      this.loading.set(false);
-      this.error.set("Error al analizar la fase.");
+      return;
     }
-  });
-}
 
-
-cambiarFase(fase: 'lexico' | 'sintactico' | 'semantico') {
-
-  // Cambiar visualmente la pestaña activa
-  this.activePhase.set(fase);
-
-  // Si ya existen datos -> no volver a consultar
-  if (this.phaseResults()[fase]) {
-    return;
+    // Si no hay datos previos, hacer análisis completo primero
+    this.loading.set(true);
+    this.api.analyze(token).subscribe({
+      next: (res: any) => {
+        this.analyzedData.set(res);
+        
+        // Guardar todos los datos
+        this.phaseResults.set({
+          lexico: res,
+          sintactico: res.sintactico,
+          semantico: res.semantico
+        });
+        
+        this.activePhase.set(fase);
+        this.showModal.set(true);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set(`Error al analizar: ${err?.message || 'Error desconocido'}`);
+      }
+    });
   }
 
-  // Si no existen datos -> consultar automáticamente
-  const token = this.jwtText?.trim();
-  if (!token) {
-    this.error.set("No hay token para analizar.");
-    return;
-  }
+  onPhaseChanged(fase: 'lexico' | 'sintactico' | 'semantico') {
+    this.activePhase.set(fase);
 
-  this.loading.set(true);
+    // Si ya existe resultado para esa fase, no hacer nada más
+    if (this.phaseResults()[fase]) return;
 
-  this.api.analyzePhase(token, fase).subscribe({
-    next: (res) => {
-      const current = this.phaseResults();
-      this.phaseResults.set({
-        ...current,
-        [fase]: res
-      });
-
-      this.loading.set(false);
-    },
-    error: () => {
-      this.loading.set(false);
-      this.error.set("Error al analizar la fase.");
+    // Si no existe, obtener del analyzedData si está disponible
+    const currentData = this.analyzedData();
+    if (currentData) {
+      if (fase === 'lexico') {
+        this.phaseResults.update(current => ({
+          ...current,
+          lexico: currentData
+        }));
+      } else if (fase === 'sintactico') {
+        this.phaseResults.update(current => ({
+          ...current,
+          sintactico: currentData.sintactico
+        }));
+      } else if (fase === 'semantico') {
+        this.phaseResults.update(current => ({
+          ...current,
+          semantico: currentData.semantico
+        }));
+      }
+      return;
     }
-  });
-}
 
-// En jwt-analyzer.ts - ACTUALIZA esta función:
-
-onPhaseChanged(fase: 'lexico' | 'sintactico' | 'semantico') {
-  this.activePhase.set(fase);
-
-  // Si ya existe resultado -> no llamar API nuevamente
-  if (this.phaseResults()[fase]) return;
-
-  // Si no existe -> consultar API
-  const token = this.jwtText?.trim();
-  if (!token) {
-    this.error.set("No hay token para analizar.");
-    return;
+    // Si no hay datos, mostrar error
+    this.error.set("Primero debes analizar el token completo.");
   }
-
-  this.loading.set(true);
-  this.api.analyzePhase(token, fase).subscribe({
-    next: (res) => {
-      const current = this.phaseResults();
-      this.phaseResults.set({ 
-        ...current, 
-        [fase]: res 
-      });
-      this.loading.set(false);
-    },
-    error: (err) => { 
-      this.loading.set(false);
-      // Crear objeto vacío para que el modal tenga algo que mostrar
-      const current = this.phaseResults();
-      this.phaseResults.set({
-        ...current,
-        [fase]: { 
-          errores: [`Error al cargar fase ${fase}: ${err?.message || 'Error desconocido'}`],
-          tokens: [],
-          advertencias: []
-        }
-      });
-    }
-  });
-}
-
-
-
-
-
-
-
 }

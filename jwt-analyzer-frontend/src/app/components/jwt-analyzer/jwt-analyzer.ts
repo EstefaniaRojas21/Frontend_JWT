@@ -21,6 +21,10 @@ export class JwtAnalyzer {
   analyzedData = signal<any | null>(null);
   showDetails = signal(false);
   showModal = signal(false);
+  header = signal<any | null>(null);
+  payload = signal<any | null>(null);
+  signatureValid = signal<boolean>(false);
+
 
   activePhase = signal<'lexico' | 'sintactico' | 'semantico'>('lexico');
 
@@ -35,43 +39,103 @@ export class JwtAnalyzer {
 
   constructor(private api: JwtApi) {}
 
-  analizarToken() {
+  validarTokenFront(token: string): { ok: boolean; error?: string } {
+    if (!token || token.trim().length === 0) {
+      return { ok: false, error: "El token está vacío." };
+    }
 
-    
+    const partes = token.split(".");
+    if (partes.length !== 3) {
+      return {
+        ok: false,
+        error: "El token JWT debe tener 3 partes: header.payload.signature",
+      };
+    }
+
+    const [header, payload, signature] = partes;
+
+    if (!header) return { ok: false, error: "La sección HEADER está vacía." };
+    if (!payload) return { ok: false, error: "La sección PAYLOAD está vacía." };
+    if (!signature) return { ok: false, error: "La sección SIGNATURE está vacía." };
+
+    const base64urlRegex = /^[A-Za-z0-9\-_]+$/;
+
+    if (!base64urlRegex.test(header)) {
+      return {
+        ok: false,
+        error: "El HEADER contiene caracteres inválidos para base64URL.",
+      };
+    }
+
+    if (!base64urlRegex.test(payload)) {
+      return {
+        ok: false,
+        error: "El PAYLOAD contiene caracteres inválidos para base64URL.",
+      };
+    }
+
+    if (!base64urlRegex.test(signature)) {
+      return {
+        ok: false,
+        error: "La SIGNATURE contiene caracteres inválidos para base64URL.",
+      };
+    }
+
+    return { ok: true };
+  }
+
+
+
+  analizarToken() {
     const token = this.jwtText?.trim();
-    if (!token) {
-      this.error.set('Por favor pega un token JWT antes de analizar.');
+
+    const validacion = this.validarTokenFront(token);
+
+    if (!validacion.ok) {
+      Swal.fire({
+        icon: "error",
+        title: "Token inválido",
+        text: validacion.error,
+        confirmButtonColor: "#d33",
+      });
       return;
     }
 
-    this.error.set(null);
     this.loading.set(true);
+    this.error.set(null);
 
     this.api.analyze(token).subscribe({
       next: (res: any) => {
-        console.log('Respuesta API completa:', res);
-        this.analyzedData.set(res);
-        
+        console.log("Respuesta API completa:", res);
 
-        this.phaseResults.set({
-          lexico: res,  // El análisis completo incluye todo lo léxico
-          sintactico: res.sintactico,
-          semantico: res.semantico
-        });
-        
-       // this.tokenAnalyzed.emit(res);
-        this.tokenAnalyzed.emit(res); 
+        // Ahora sí existen estas señales
+        this.header.set(res?.header ?? null);
+        this.payload.set(res?.payload ?? null);
+        this.signatureValid.set(res?.signatureValid ?? false);
+
+        this.analyzedData.set(res);
+
+        this.handleSuccess(res);  // <-- ALERTA SWEETALERT2 AQUÍ
+
         this.loading.set(false);
       },
+
       error: (err: any) => {
-        const msg = err?.error?.error ?? err?.message ?? 'Error al analizar';
-        this.error.set(msg);
+        const msg =
+          err?.error?.error ??
+          err?.message ??
+          "Error al analizar el token";
+
+        this.handleError(msg); // usa la alerta correcta
+
         this.loading.set(false);
       }
     });
-
-    
   }
+
+
+
+
 
   validarFirma() {
   const token = this.jwtText?.trim();
@@ -242,4 +306,114 @@ export class JwtAnalyzer {
     // Si no hay datos, mostrar error
     this.error.set("Primero debes analizar el token completo.");
   }
+
+  handleSuccess(resp: any) {
+
+    // ❌ Backend retornó success=false
+    if (resp.success === false) {
+      return Swal.fire({
+        icon: 'error',
+        title: 'Error en el análisis',
+        html: resp.error || resp.errores?.join('<br>') || 'Error desconocido'
+      });
+    }
+
+    // ❌ Errores léxicos
+    if (resp.errores?.length > 0) {
+      return Swal.fire({
+        icon: 'error',
+        title: 'Errores léxicos',
+        html: resp.errores.join('<br>')
+      });
+    }
+
+    // ❌ Sintácticos
+    if (resp.sintactico?.errores?.length > 0) {
+      return Swal.fire({
+        icon: 'error',
+        title: 'Errores sintácticos',
+        html: resp.sintactico.errores.join('<br>')
+      });
+    }
+
+    // ❌ Semánticos
+    const semanticos = resp.semantico?.errores ?? [];
+    if (semanticos.length > 0) {
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Errores semánticos',
+        html: semanticos.join('<br>')
+      });
+    }
+
+    // ❌ Tiempo del token
+    const tiempo = resp.semantico?.validacion_tiempo?.errores ?? [];
+    if (tiempo.length > 0) {
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Errores en claims de tiempo',
+        html: tiempo.join('<br>')
+      });
+    }
+
+    // ✔ Token válido
+    return Swal.fire({
+      icon: 'success',
+      title: 'Token válido',
+      text: 'El token pasó todas las validaciones correctamente.'
+    });
+  }
+
+
+
+
+
+  handleError(err: any) {
+
+    const errores = err?.error?.errores || err?.error?.error || err?.message;
+
+    // JSON malo
+    if (Array.isArray(errores) && errores.some(e => e.includes("JSON"))) {
+      return Swal.fire({
+        icon: 'error',
+        title: 'Token malformado',
+        html: errores.join('<br>')
+      });
+    }
+
+    // Base64 inválido
+    if (Array.isArray(errores) && errores.some(e => e.includes("base64"))) {
+      return Swal.fire({
+        icon: 'error',
+        title: 'Base64 inválido',
+        text: 'La codificación base64URL no es válida.'
+      });
+    }
+
+    // Firma inválida
+    if (typeof errores === 'string' && errores.includes("Firma inválida")) {
+      return Swal.fire({
+        icon: 'error',
+        title: 'Firma inválida',
+        text: 'La firma no coincide con la clave secreta.'
+      });
+    }
+
+    // Claims de tiempo mal formados
+    if (Array.isArray(errores) && errores.some(e => e.includes("entero"))) {
+      return Swal.fire({
+        icon: 'error',
+        title: 'Error en claims de tiempo',
+        html: errores.join('<br>')
+      });
+    }
+
+    // Error genérico
+    return Swal.fire({
+      icon: 'error',
+      title: 'Error interno',
+      text: 'Ocurrió un error inesperado en el análisis.'
+    });
+  }
+
 }

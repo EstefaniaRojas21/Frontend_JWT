@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 
+
 @Component({
   selector: 'app-lexical-modal',
   standalone: true,

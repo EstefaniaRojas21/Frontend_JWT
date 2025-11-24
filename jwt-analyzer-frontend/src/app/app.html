@@ -16,10 +16,16 @@
       <nav class="header-actions">
         <button class="btn ghost" (click)="onClearAll()">Limpiar Todo</button>
         <a href="#" class="link-muted" target="_blank" rel="noopener">Docs</a>
+        
       </nav>
+
+     
+
+
 
     </div>
   </header>
+
 
 
 <!-- Main container con grid de dos columnas -->
@@ -33,6 +39,8 @@
   [externalDecodedPayload]="decodedPayload"
   (tokenGenerated)="onTokenGenerated($event)">
   </jwt-encoder>
+
+  
 
 
 </main>

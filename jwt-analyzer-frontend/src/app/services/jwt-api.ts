@@ -5,6 +5,10 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { map, catchError } from 'rxjs/operators';
 
+export interface JwtHistoryItem {
+  descripcion: string;
+  token: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class JwtApi {
@@ -32,6 +36,10 @@ export class JwtApi {
       jwt: token,
       secret: secret
     });
+  }
+
+  getHistory() {
+    return this.http.get<{ success: boolean; data: JwtHistoryItem[] }>(`${this.base}/history`);
   }
 
 

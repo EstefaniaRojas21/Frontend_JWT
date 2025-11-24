@@ -2,6 +2,161 @@
   display: block;
 }
 
+.top-right {
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.history-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.history-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.history-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 90%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.history-content h3 {
+  margin-bottom: 15px;
+  color: #333;
+}.history-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.history-content {
+  position: relative; /* necesario para ubicar la X dentro */
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 90%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.history-content h3 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  font-family: Arial, sans-serif;
+  font-size: 0.85rem; 
+}
+
+
+.close-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-x:hover {
+  color: red; /* resalta en rojo al pasar el mouse */
+}
+.history-table th,
+.history-table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.history-table thead {
+  background-color: #f4f4f4;
+}
+
+.history-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.token-cell {
+  word-break: break-all;
+}
+
+button {
+  cursor: pointer;
+}
+
+.close-btn {
+  margin-top: 10px;
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.copy-btn {
+  background-color: #28a745; /* Verde */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.copy-btn:hover {
+  background-color: #218838;
+}
+
+.close-btn:hover {
+  background-color: #c82333;
+}
+
+.token-cell {
+  max-width: 350px;
+  word-break: break-all;
+}
+
 /* ==========================================
    CONTENEDOR PRINCIPAL
 ========================================== */

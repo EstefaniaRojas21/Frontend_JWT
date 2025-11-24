@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { JwtApi } from '../../services/jwt-api';
+import { JwtApi, JwtHistoryItem  } from '../../services/jwt-api';
 import { OutputPanel } from '../output-panel/output-panel';
 import { LexicalModal } from '../lexical-modal/lexical-modal';
 import Swal from 'sweetalert2';
@@ -24,6 +24,8 @@ export class JwtAnalyzer {
   header = signal<any | null>(null);
   payload = signal<any | null>(null);
   signatureValid = signal<boolean>(false);
+  showHistory = signal(false);
+  historyData = signal<JwtHistoryItem[]>([]);
 
 
   activePhase = signal<'lexico' | 'sintactico' | 'semantico'>('lexico');
@@ -38,6 +40,47 @@ export class JwtAnalyzer {
   
 
   constructor(private api: JwtApi) {}
+
+  // Método para cargar historial
+  toggleHistory() {
+    if (!this.showHistory()) {
+      this.api.getHistory().subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.historyData.set(res.data);
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error al obtener historial',
+              text: 'Error desconocido'
+            });
+          }
+        },
+        error: (err) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error en el servidor',
+            text: err.message || 'No se pudo cargar el historial'
+          });
+        }
+      });
+    }
+    this.showHistory.set(!this.showHistory());
+  }
+
+  // Método para copiar token
+  copyToClipboard(token: string) {
+    navigator.clipboard.writeText(token).then(() => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Copiado',
+        text: 'Token copiado al portapapeles',
+        timer: 1200,
+        showConfirmButton: false
+      });
+    });
+  }
+
 
   validarTokenFront(token: string): { ok: boolean; error?: string } {
     if (!token || token.trim().length === 0) {

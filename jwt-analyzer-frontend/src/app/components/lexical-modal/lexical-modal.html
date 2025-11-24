@@ -47,9 +47,9 @@
 
           <!-- Notación formal -->
           <div class="formal-notation">
-            <p><strong>σ₁ (Base64URL):</strong> {{ '{' }} A–Z, a–z, 0–9, '-', '_' {{ '}' }}</p>
-            <p><strong>σ₂ (Delimitador JWT):</strong> {{ '{' }} '.' {{ '}' }}</p>
-            <p><strong>σ (Alfabeto Total):</strong> {{ '{' }} A–Z ∪ a–z ∪ 0–9 ∪ '-' ∪ '_' ∪ '.' {{ '}' }}</p>
+            <p><strong>Base64URL:</strong> {{ '{' }} A–Z, a–z, 0–9, '-', '_' {{ '}' }}</p>
+            <p><strong>Delimitador JWT:</strong> {{ '{' }} '.' {{ '}' }}</p>
+            <p><strong>Alfabeto Total:</strong> {{ '{' }} A–Z ∪ a–z ∪ 0–9 ∪ '-' ∪ '_' ∪ '.' {{ '}' }}</p>
 
           </div>
 
@@ -120,17 +120,6 @@
           </div>
         </div>
 
-        <!-- HEADER DECODIFICADO -->
-        <div *ngIf="result.header_decodificado" class="section">
-          <h3>🛡 Header Decodificado</h3>
-          <pre class="json-display">{{ result.header_decodificado | json }}</pre>
-        </div>
-
-        <!-- PAYLOAD DECODIFICADO -->
-        <div *ngIf="result.payload_decodificado" class="section">
-          <h3>📦 Payload Decodificado</h3>
-          <pre class="json-display">{{ result.payload_decodificado | json }}</pre>
-        </div>
 
         
 
@@ -163,6 +152,7 @@
         </div>
       </div>
 
+
       <!-- DERIVACIONES -->
       <!-- DERIVACIONES -->
       <div *ngIf="result.derivaciones?.length" class="section">
@@ -178,12 +168,6 @@
       <div *ngIf="result.arbol_sintactico" class="section">
         <h3>🌲 Árbol Sintáctico</h3>
         <pre class="json-display">{{ result.arbol_sintactico | json }}</pre>
-      </div>
-
-      <!-- GRAMÁTICA -->
-      <div *ngIf="result.gramatica" class="section">
-        <h3>📜 Gramática Aplicada</h3>
-        <pre class="json-display">{{ result.gramatica | json }}</pre>
       </div>
 
       <!-- ERRORES SINTÁCTICOS -->
